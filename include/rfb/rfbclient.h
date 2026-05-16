@@ -194,6 +194,19 @@ typedef void (*HandleTextChatProc)(struct _rfbClient* client, int value, char *t
  * @param opcode The opcode. 0 is XVP_FAIL, 1 is XVP_INIT
  */
 typedef void (*HandleXvpMsgProc)(struct _rfbClient* client, uint8_t version, uint8_t opcode);
+/**
+ * Handles server-side keyboard lock/modifier LED state updates.
+ *
+ * The value is a bitmask using rfbKeyboardMaskCapsLock,
+ * rfbKeyboardMaskNumLock, rfbKeyboardMaskScrollLock, and the other
+ * rfbKeyboardMask* values from rfbproto.h. The callback reports the remote
+ * server state; applications that want to mirror it to local hardware or UI
+ * indicators must do that themselves in platform-specific code.
+ *
+ * @param client The client which received the LED state update
+ * @param value The rfbKeyboardMask* bitmask sent by the server
+ * @param pad Reserved for future expansion, currently 0
+ */
 typedef void (*HandleKeyboardLedStateProc)(struct _rfbClient* client, int value, int pad);
 typedef rfbBool (*HandleCursorPosProc)(struct _rfbClient* client, int x, int y);
 typedef void (*SoftCursorLockAreaProc)(struct _rfbClient* client, int x, int y, int w, int h);
@@ -355,7 +368,7 @@ typedef struct _rfbClient {
 
 	rfbVNCRec* vncRec;
 
-	/* Keyboard State support (is 'Caps Lock' set on the remote display???) */
+	/* Keyboard state support: server-side lock/modifier LED bitmask. */
 	int KeyboardLedStateEnabled;
 	int CurrentKeyboardLedState;
 

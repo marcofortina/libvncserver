@@ -113,7 +113,12 @@ typedef rfbBool (*rfbPasswordCheckProcPtr)(struct _rfbClientRec* cl,const char* 
 typedef enum rfbNewClientAction (*rfbNewClientHookPtr)(struct _rfbClientRec* cl);
 typedef void (*rfbDisplayHookPtr)(struct _rfbClientRec* cl);
 typedef void (*rfbDisplayFinishedHookPtr)(struct _rfbClientRec* cl, int result);
-/** support the capability to view the caps/num/scroll states of the X server */
+/**
+ * Return the server-side keyboard lock/modifier LED state as an
+ * rfbKeyboardMask* bitmask for the LibVNC KeyboardLedState pseudo-encoding.
+ * The application owns the OS-specific state lookup; LibVNCServer only
+ * transports the returned value to clients that advertised support.
+ */
 typedef int  (*rfbGetKeyboardLedStateHookPtr)(struct _rfbScreenInfo* screen);
 typedef rfbBool (*rfbXvpHookPtr)(struct _rfbClientRec* cl, uint8_t, uint8_t);
 typedef int (*rfbSetDesktopSizeHookPtr)(int width, int height, int numScreens, struct rfbExtDesktopScreen* extDesktopScreens, struct _rfbClientRec* cl);

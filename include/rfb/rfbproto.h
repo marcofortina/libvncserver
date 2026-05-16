@@ -613,9 +613,9 @@ typedef struct {
  */
 
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
- * KeyboardLedState Encoding.  The X coordinate contains the Locked Modifiers
- * so that a remote troubleshooter can identify that the users 'Caps Lock' 
- * is set...   (It helps a *lot* when the users are untrained)
+ * KeyboardLedState Encoding.  The X coordinate contains the server-side
+ * locked modifier/LED bitmask. This LibVNC-specific pseudo-encoding lets a
+ * viewer display remote Caps Lock, Num Lock, Scroll Lock, and related state.
  */
 #define rfbKeyboardMaskShift        1
 #define rfbKeyboardMaskCapsLock     2

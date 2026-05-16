@@ -71,6 +71,24 @@ RFB Protocol Support Status
 | Websockets                 | ✔            |              |
 | Encrypted Websockets       | ✔            |              |
 
+## Keyboard LED state extension
+
+LibVNCServer and LibVNCClient support a LibVNC-specific `KeyboardLedState`
+pseudo-encoding. This is useful when an application wants a viewer to display
+the server-side Caps Lock, Num Lock, Scroll Lock, or other modifier state.
+
+This is not a standard way to control the viewer machine's physical keyboard
+LEDs. A server application supplies its current lock/modifier state through
+`rfbScreenInfo::getKeyboardLedStateHook`; LibVNCServer sends updates only to
+clients that advertised `rfbEncodingKeyboardLedState`. A client application can
+observe those updates by setting `rfbClient::HandleKeyboardLedState` and reading
+`rfbClient::CurrentKeyboardLedState`.
+
+The value is a bitmask using `rfbKeyboardMaskCapsLock`,
+`rfbKeyboardMaskNumLock`, `rfbKeyboardMaskScrollLock`, and the other
+`rfbKeyboardMask*` values from `rfbproto.h`. The SDL and GTK viewer examples
+install a `HandleKeyboardLedState` callback and print the received state.
+
 
 How to build
 ============
