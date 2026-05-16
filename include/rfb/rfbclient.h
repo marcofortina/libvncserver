@@ -350,6 +350,20 @@ typedef struct _rfbClient {
 	/** Holds cursor shape data when received from server. */
 	uint8_t *rcSource, *rcMask;
 
+	/**
+	 * VMware cursor data received from rfbEncodingVMwareCursor.
+	 * GotCursorShape is re-used for VMware cursor updates, but rcSource/rcMask
+	 * cannot represent all VMware cursor types. If vmwareCursorType is 0,
+	 * vmwareCursorAndMask and vmwareCursorXorMask contain width * height *
+	 * bytesPerPixel bytes each. If vmwareCursorType is 1, vmwareCursorRgba
+	 * contains width * height * 4 RGBA bytes. These buffers are valid until
+	 * the next cursor shape update or rfbClientCleanup().
+	 */
+	uint8_t vmwareCursorType;
+	uint8_t *vmwareCursorAndMask;
+	uint8_t *vmwareCursorXorMask;
+	uint8_t *vmwareCursorRgba;
+
 	/** private data pointer */
 	rfbClientData* clientData;
 
@@ -516,6 +530,7 @@ typedef struct _rfbClient {
  * shape and hands it over to GotCursorShapeProc, if set.
  */
 extern rfbBool HandleCursorShape(rfbClient* client,int xhot, int yhot, int width, int height, uint32_t enc);
+extern rfbBool HandleVMwareCursorShape(rfbClient* client,int xhot, int yhot, int width, int height);
 
 /* listen.c */
 

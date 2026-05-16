@@ -529,6 +529,7 @@ typedef struct {
 #define rfbEncodingQualityLevel9   0xFFFFFFE9
 
 #define rfbEncodingQemuExtendedKeyEvent 0xFFFFFEFE /* -258 */
+#define rfbEncodingVMwareCursor       0x574D5664
 #define rfbEncodingExtendedClipboard 0xC0A1E5CE
 
 /* LibVNCServer additions.   We claim 0xFFFE0000 - 0xFFFE00FF */

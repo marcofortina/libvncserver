@@ -38,6 +38,18 @@
     (((uint##bpp##_t)(b) & 0xFF) * client->format.blueMax + 127) / 255            \
     << client->format.blueShift)
 
+static void
+FreeVMwareCursorData(rfbClient* client)
+{
+  free(client->vmwareCursorAndMask);
+  client->vmwareCursorAndMask = NULL;
+  free(client->vmwareCursorXorMask);
+  client->vmwareCursorXorMask = NULL;
+  free(client->vmwareCursorRgba);
+  client->vmwareCursorRgba = NULL;
+  client->vmwareCursorType = 0;
+}
+
 
 rfbBool HandleCursorShape(rfbClient* client,int xhot, int yhot, int width, int height, uint32_t enc)
 {
@@ -53,13 +65,14 @@ rfbBool HandleCursorShape(rfbClient* client,int xhot, int yhot, int width, int h
   bytesPerRow = (width + 7) / 8;
   bytesMaskData = bytesPerRow * height;
 
-  if (width * height == 0)
+  if (width <= 0 || height <= 0)
     return TRUE;
 
   if (width >= MAX_CURSOR_SIZE || height >= MAX_CURSOR_SIZE)
     return FALSE;
 
   /* Allocate memory for pixel data and temporary mask data. */
+  FreeVMwareCursorData(client);
   free(client->rcSource);
 
   client->rcSource = malloc((size_t)width * height * bytesPerPixel);
@@ -177,3 +190,67 @@ rfbBool HandleCursorShape(rfbClient* client,int xhot, int yhot, int width, int h
 }
 
 
+
+
+rfbBool HandleVMwareCursorShape(rfbClient* client,int xhot, int yhot, int width, int height)
+{
+  uint8_t cursorType[2];
+  size_t pixels;
+  size_t bytesPerPixel;
+  size_t cursorBytes;
+
+  if (width <= 0 || height <= 0)
+    return TRUE;
+
+  if (width >= MAX_CURSOR_SIZE || height >= MAX_CURSOR_SIZE)
+    return FALSE;
+
+  if (!ReadFromRFBServer(client, (char *)cursorType, sizeof(cursorType)))
+    return FALSE;
+
+  pixels = (size_t)width * height;
+  bytesPerPixel = client->format.bitsPerPixel / 8;
+
+  free(client->rcSource);
+  client->rcSource = NULL;
+  free(client->rcMask);
+  client->rcMask = NULL;
+  FreeVMwareCursorData(client);
+
+  switch (cursorType[0]) {
+  case 0:
+    cursorBytes = pixels * bytesPerPixel;
+    client->vmwareCursorAndMask = malloc(cursorBytes);
+    client->vmwareCursorXorMask = malloc(cursorBytes);
+    if (!client->vmwareCursorAndMask || !client->vmwareCursorXorMask) {
+      FreeVMwareCursorData(client);
+      return FALSE;
+    }
+    if (!ReadFromRFBServer(client, (char *)client->vmwareCursorAndMask, cursorBytes) ||
+        !ReadFromRFBServer(client, (char *)client->vmwareCursorXorMask, cursorBytes)) {
+      FreeVMwareCursorData(client);
+      return FALSE;
+    }
+    client->vmwareCursorType = cursorType[0];
+    if (client->GotCursorShape != NULL)
+      client->GotCursorShape(client, xhot, yhot, width, height, (int)bytesPerPixel);
+    return TRUE;
+
+  case 1:
+    cursorBytes = pixels * 4;
+    client->vmwareCursorRgba = malloc(cursorBytes);
+    if (!client->vmwareCursorRgba)
+      return FALSE;
+    if (!ReadFromRFBServer(client, (char *)client->vmwareCursorRgba, cursorBytes)) {
+      FreeVMwareCursorData(client);
+      return FALSE;
+    }
+    client->vmwareCursorType = cursorType[0];
+    if (client->GotCursorShape != NULL)
+      client->GotCursorShape(client, xhot, yhot, width, height, 4);
+    return TRUE;
+  }
+
+  rfbClientLog("Unsupported VMware cursor type %u\n", (unsigned int)cursorType[0]);
+  return FALSE;
+}

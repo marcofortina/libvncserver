@@ -1335,6 +1335,8 @@ SetFormatAndEncodings(rfbClient* client)
 	encs[se->nEncodings++] = rfbClientSwap32IfLE(rfbEncodingCoRRE);
       } else if (strncasecmp(encStr,"rre",encStrLen) == 0) {
 	encs[se->nEncodings++] = rfbClientSwap32IfLE(rfbEncodingRRE);
+      } else if (strncasecmp(encStr,"vmwarecursor",encStrLen) == 0) {
+	encs[se->nEncodings++] = rfbClientSwap32IfLE(rfbEncodingVMwareCursor);
       } else {
 	rfbClientLog("Unknown encoding '%.*s'\n",encStrLen,encStr);
       }
@@ -1415,6 +1417,8 @@ SetFormatAndEncodings(rfbClient* client)
       encs[se->nEncodings++] = rfbClientSwap32IfLE(rfbEncodingRichCursor);
     if (se->nEncodings < MAX_ENCODINGS)
       encs[se->nEncodings++] = rfbClientSwap32IfLE(rfbEncodingPointerPos);
+    if (se->nEncodings < MAX_ENCODINGS)
+      encs[se->nEncodings++] = rfbClientSwap32IfLE(rfbEncodingVMwareCursor);
   }
 
   /* Keyboard State Encodings */
@@ -2123,6 +2127,14 @@ HandleRFBServerMessage(rfbClient* client)
 	if (!HandleCursorShape(client,
 			       rect.r.x, rect.r.y, rect.r.w, rect.r.h,
 			       rect.encoding)) {
+	  return FALSE;
+	}
+	continue;
+      }
+
+      if (rect.encoding == rfbEncodingVMwareCursor) {
+	if (!HandleVMwareCursorShape(client,
+				     rect.r.x, rect.r.y, rect.r.w, rect.r.h)) {
 	  return FALSE;
 	}
 	continue;

@@ -590,6 +590,9 @@ void rfbClientCleanup(rfbClient* client) {
   free(client->clientAuthSchemes);
   free(client->rcSource);
   free(client->rcMask);
+  free(client->vmwareCursorAndMask);
+  free(client->vmwareCursorXorMask);
+  free(client->vmwareCursorRgba);
 
 #ifdef LIBVNCSERVER_HAVE_SASL
   free(client->saslSecret);
